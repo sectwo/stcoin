@@ -1,4 +1,4 @@
-package explore
+package explorer
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/sectwo/stcoin/blockchain"
 )
 
@@ -37,8 +38,9 @@ func add(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartExplorer(port int) {
-	handler := http.NewServeMux()
+func Start(port int) {
+	handler := mux.NewRouter()
+
 	templates = template.Must(template.ParseGlob(templateDir + "pages/*.gohtml"))
 	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.gohtml"))
 	handler.HandleFunc("/", home)

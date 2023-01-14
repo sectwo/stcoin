@@ -1,11 +1,7 @@
 package main
 
-import (
-	explore "github.com/sectwo/stcoin/explorer"
-	"github.com/sectwo/stcoin/rest"
-)
+import "github.com/sectwo/stcoin/cli"
 
 func main() {
-	go explore.StartExplorer(4000)
-	rest.Start(8080)
+	cli.Start()
 }
