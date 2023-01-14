@@ -1,12 +1,12 @@
-http://localhost:8080/
+http://localhost:8000/
 ###
-http://localhost:8080/blocks
+http://localhost:8000/blocks
 ###
-POST http://localhost:8080/blocks
+POST http://localhost:8000/blocks
 
 {
     "message": "Data for my block"
 }
 
 ###
-http://localhost:8080/blocks/5
+http://localhost:8000/blocks/5
