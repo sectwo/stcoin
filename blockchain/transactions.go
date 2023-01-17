@@ -47,10 +47,12 @@ type UTxOut struct {
 
 func isOnMempool(uTxOut *UTxOut) bool {
 	exists := false
+Outer:
 	for _, tx := range Mempool.Txs {
 		for _, input := range tx.TxIns {
 			if input.TxID == uTxOut.TxID && input.Index == uTxOut.Index {
 				exists = true
+				break Outer
 			}
 			// exists = input.TxID == uTxOut.TxID && input.Index == uTxOut.Index
 		}
@@ -81,17 +83,16 @@ func makeCoinbaseTx(address string) *Tx {
 // 2. 충분하다면, A의 잔액을 이전 TxOut으로 부터 계산하여 현재 내 주머니의 돈을 계산
 func makeTx(from, to string, amount int) (*Tx, error) {
 	// BalanceByAddress로 부터 Balance가 충분하지 않다면 nil
-	if Blockchain().BalanceByAddress(from) < amount {
+	if BalanceByAddress(Blockchain(), from) < amount {
 		return nil, errors.New("Not enought money")
 	}
 	var txOuts []*TxOut
 	var txIns []*TxIn
 	total := 0
-	UTxOuts := Blockchain().UTxOutsByAddress(from)
-
+	UTxOuts := UTxOutsByAddress(Blockchain(), from)
 	// 거래를 위한 TxIns 생성
 	for _, uTxOut := range UTxOuts {
-		if total > amount {
+		if total >= amount {
 			break
 		}
 		txIn := &TxIn{uTxOut.TxID, uTxOut.Index, from}
