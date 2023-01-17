@@ -81,30 +81,38 @@ func (b *blockchain) difficulty() int {
 	}
 }
 
-func (b *blockchain) txOuts() []*TxOut {
-	var txOuts []*TxOut
-	blocks := b.Blocks()
-	for _, block := range blocks {
-		for _, tx := range block.Transections {
-			txOuts = append(txOuts, tx.TxOuts...)
-		}
-	}
-	return txOuts
-}
+func (b *blockchain) UTxOutsByAddress(address string) []*UTxOut {
+	// 사용되지 않은 Tx
+	var uTxOuts []*UTxOut
+	creatorTxs := make(map[string]bool)
 
-func (b *blockchain) TxOutsByAddress(address string) []*TxOut {
-	var ownedTxOuts []*TxOut
-	txOuts := b.txOuts()
-	for _, txOut := range txOuts {
-		if txOut.Owner == address {
-			ownedTxOuts = append(ownedTxOuts, txOut)
+	for _, block := range b.Blocks() {
+		for _, tx := range block.Transections {
+			for _, input := range tx.TxIns {
+				if input.Owner == address {
+					// 해당하는 input을 사용하는 TxOut을 찾기
+					// input으로 사용하고 있는 output을 찾아서 그 output을 가지고 있는 txID를 저장하는 단계
+					// !! input으로 사용된 ouput의 TxID를 True로 마킹
+					creatorTxs[input.TxID] = true
+				}
+			}
+			for index, output := range tx.TxOuts {
+				if output.Owner == address {
+					if _, ok := creatorTxs[tx.Id]; !ok {
+						uTxOut := &UTxOut{tx.Id, index, output.Amount}
+						if !isOnMempool(uTxOut) {
+							uTxOuts = append(uTxOuts, uTxOut)
+						}
+					}
+				}
+			}
 		}
 	}
-	return ownedTxOuts
+	return uTxOuts
 }
 
 func (b *blockchain) BalanceByAddress(address string) int {
-	txOuts := b.TxOutsByAddress(address)
+	txOuts := b.UTxOutsByAddress(address)
 	var amount int
 	for _, txOut := range txOuts {
 		amount += txOut.Amount

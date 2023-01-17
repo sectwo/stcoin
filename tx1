@@ -1,0 +1,48 @@
+type Tx struct {
+	Id        string   `json:"id"`
+	Timestamp int      `json:"timestamp"`
+	TxIns     []*TxIn  `json:"txIns"`
+	TxOuts    []*TxOut `json:"txOuts"`
+}
+
+type TxIn struct {
+	TxID  string `json:"txId"`
+	Index int    `json:"index"`
+	Owner string `json:"owner"`
+}
+
+type TxOut struct {
+	Owner  string `json:"owner"`
+	Amount int    `json:"amount"`
+}
+
+type UTxOut struct {
+	TxID   string `json:"txId"`
+	Index  int    `json:"index"`
+	Amount int    `json:"amount"`
+}
+
+
+Tx1
+    TxIns[COINBASE]
+    TxOuts[$5(isaac)] <--- 사용해버린 TxOut(Spent TxOut)
+
+Tx2
+    // 이전의 TxOuts을 참조해야함 
+    TxIns[Tx1.TxOuts[0]] 
+    TxOuts[$5(siyoung)] <--- 사용해버린 TxOut(Spent TxOut)
+
+Tx3
+    TxIns[Tx2.TxOuts[0]] 
+    TxOuts[$3(isaac), $2(siyoung)] <--- 사용되지않은 TxOut(uTxOut) x 2 
+
+
+TxIn은 TxOut을 찾기위한 표지판 역할
+
+1. TxIn에 참조되는 TxID를 추적
+type TxIn struct {
+	TxID  string `json:"txId"`      ---> TxOut을 생성한 Transaction의 ID를 가르킴
+	Index int    `json:"index"`     ---> 그 TxId의 위치를 가르킴
+	Owner string `json:"owner"`     ---> 소유자(누구로 부터 돈을 받았는지)
+}
+-> TxID는 TxIn이 참조한 TxOut을 가지고 있는지 확인시켜주며, Index는 그 TxOut의 위치를 알려줌 

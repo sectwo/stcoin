@@ -19,8 +19,12 @@ POST http://localhost:8000/transactions
 
 {
     "to": "siyoung",
-    "amount":80
+    "amount":50
 }
 
 ###
 http://localhost:8000/mempool
+###
+http://localhost:8000/balance/siyoung?total=true
+###
+http://localhost:8000/balance/isaac?total=true
