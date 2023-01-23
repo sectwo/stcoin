@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sectwo/stcoin/blockchain"
 	"github.com/sectwo/stcoin/utils"
+	"github.com/sectwo/stcoin/wallet"
 )
 
 var port string
@@ -35,6 +36,10 @@ func (u urlDescription) String() string {
 type balanceResponse struct {
 	Address string `json:"address"`
 	Balance int    `json:"balance"`
+}
+
+type myWalletResponse struct {
+	Address string `json:"address"`
 }
 
 type errorResponse struct {
@@ -139,9 +144,17 @@ func transactions(w http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
 	err := blockchain.Mempool.AddTx(payload.To, payload.Amount)
 	if err != nil {
-		json.NewEncoder(w).Encode(errorResponse{"Not enought funds"})
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(errorResponse{err.Error()})
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func myWallet(w http.ResponseWriter, r *http.Request) {
+	address := wallet.Wallet().Address
+	json.NewEncoder(w).Encode(myWalletResponse{Address: address})
+
 }
 
 func Start(aPort int) {
@@ -154,7 +167,8 @@ func Start(aPort int) {
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
 	router.HandleFunc("/balance/{address}", balance)
-	router.HandleFunc("/mempool", mempool)
+	router.HandleFunc("/mempool", mempool).Methods("GET")
+	router.HandleFunc("/wallet", myWallet).Methods("GET")
 	router.HandleFunc("/transactions", transactions).Methods("POST")
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))

@@ -55,6 +55,23 @@ func Blocks(b *blockchain) []*Block {
 	return blocks
 }
 
+func Txs(b *blockchain) []*Tx {
+	var txs []*Tx
+	for _, block := range Blocks(b) {
+		txs = append(txs, block.Transections...)
+	}
+	return txs
+}
+
+func FindTx(b *blockchain, targetID string) *Tx {
+	for _, tx := range Txs(b) {
+		if tx.Id == targetID {
+			return tx
+		}
+	}
+	return nil
+}
+
 func recalculateDifficulty(b *blockchain) int {
 	allBlocks := Blocks(b)
 	newestBlock := allBlocks[0]
@@ -88,7 +105,10 @@ func UTxOutsByAddress(b *blockchain, address string) []*UTxOut {
 	for _, block := range Blocks(b) {
 		for _, tx := range block.Transections {
 			for _, input := range tx.TxIns {
-				if input.Owner == address {
+				if input.Signature == "COINBASE" {
+					break
+				}
+				if FindTx(b, input.TxID).TxOuts[input.Index].Address == address {
 					// 해당하는 input을 사용하는 TxOut을 찾기
 					// input으로 사용하고 있는 output을 찾아서 그 output을 가지고 있는 txID를 저장하는 단계
 					// !! input으로 사용된 ouput의 TxID를 True로 마킹
@@ -96,7 +116,7 @@ func UTxOutsByAddress(b *blockchain, address string) []*UTxOut {
 				}
 			}
 			for index, output := range tx.TxOuts {
-				if output.Owner == address {
+				if output.Address == address {
 					if _, ok := creatorTxs[tx.Id]; !ok {
 						uTxOut := &UTxOut{tx.Id, index, output.Amount}
 						if !isOnMempool(uTxOut) {

@@ -9,6 +9,7 @@ type TxIn struct {
 	TxID  string `json:"txId"`
 	Index int    `json:"index"`
 	Owner string `json:"owner"`
+	sign
 }
 
 type TxOut struct {
