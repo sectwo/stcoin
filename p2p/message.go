@@ -10,10 +10,6 @@ import (
 type MessageKind int
 
 const (
-	//	MessageNewestBlock       MessageKind = 1
-	//	MessageAllBlocksRequest  MessageKind = 2
-	//	MessageAllBlocksResponse MessageKind = 3
-
 	MessageNewestBlock MessageKind = iota
 	MessageAllBlocksRequest
 	MessageAllBlocksResponse
@@ -21,13 +17,13 @@ const (
 
 type Message struct {
 	Kind    MessageKind
-	payload []byte
+	Payload []byte
 }
 
 func makeMessage(kind MessageKind, payload interface{}) []byte {
 	m := Message{
 		Kind:    kind,
-		payload: utils.ToBytes(payload),
+		Payload: utils.ToJson(payload),
 	}
 	return utils.ToJson(m)
 }
@@ -43,7 +39,7 @@ func handleMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
 		var payload blockchain.Block
-		err := json.Unmarshal(m.payload, &payload)
+		err := json.Unmarshal(m.Payload, &payload)
 		utils.HandleErr(err)
 
 	}

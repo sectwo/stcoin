@@ -1,6 +1,9 @@
 package db
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/sectwo/stcoin/utils"
 	bolt "go.etcd.io/bbolt"
 )
@@ -14,8 +17,15 @@ const (
 
 var db *bolt.DB
 
+func getPort() {
+	for i, a := range os.Args {
+		fmt.Println(i, a)
+	}
+}
+
 func DB() *bolt.DB {
 	if db == nil {
+		getPort()
 		dbPointer, err := bolt.Open(dbName, 0600, nil)
 		db = dbPointer
 		utils.HandleErr(err)
