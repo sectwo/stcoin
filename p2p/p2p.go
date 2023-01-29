@@ -26,5 +26,6 @@ func AddPeer(address, port, openPort string) {
 	// Port :8000 is requesting an upgrade from the port :8001
 	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort[1:]), nil)
 	utils.HandleErr(err)
-	initPeer(conn, address, port)
+	p := initPeer(conn, address, port)
+	sendNewestBlock(p)
 }
