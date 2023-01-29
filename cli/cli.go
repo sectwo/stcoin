@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/sectwo/stcoin/explorer"
 	"github.com/sectwo/stcoin/rest"
@@ -15,7 +14,7 @@ func usage() {
 	fmt.Printf("Please use the following flags : \n")
 	fmt.Printf("-port:		Set the PORT of the service\n")
 	fmt.Printf("-mode:		Choose between 'html' and 'rest'\n\n")
-	runtime.Goexit()
+	os.Exit(0)
 }
 
 func Start() {
@@ -41,5 +40,4 @@ func Start() {
 	}
 
 	fmt.Println(*port, *mode)
-
 }

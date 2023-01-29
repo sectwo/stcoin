@@ -47,3 +47,6 @@ type TxIn struct {
 	Owner string `json:"owner"`     ---> 소유자(누구로 부터 돈을 받았는지)
 }
 -> TxID는 TxIn이 참조한 TxOut을 가지고 있는지 확인시켜주며, Index는 그 TxOut의 위치를 알려줌 
+
+// 정리
+

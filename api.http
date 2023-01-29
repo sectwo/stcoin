@@ -32,3 +32,19 @@ http://localhost:8000/balance/siyoung?total=true
 http://localhost:8000/balance/c960460e7621ddf5fd6a322d4c4580bcbeb842bc9166c1654d90d45536675b567333aebe8c8312780164bf198c625f6f9a327316329f7ad19797e9c45d738393?total=true
 ###
 http://localhost:8000/balance/c960460e7621ddf5fd6a322d4c4580bcbeb842bc9166c1654d90d45536675b567333aebe8c8312780164bf198c625f6f9a327316329f7ad19797e9c45d738393
+
+
+
+###
+POST http://127.0.0.1:8000/peers
+
+{
+    "address": "127.0.0.1",
+    "port":"8001"
+}
+
+###
+http://127.0.0.1:8000/peers
+
+###
+http://127.0.0.1:8001/peers
