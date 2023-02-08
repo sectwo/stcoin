@@ -8,7 +8,7 @@ http://localhost:8000/blocks
 ###
 http://localhost:8000/wallet
 ###
-POST http://localhost:8000/blocks
+POST http://localhost:8001/blocks
 
 {
     "message": "Mine Block!!"
