@@ -8,7 +8,7 @@ http://localhost:8000/blocks
 ###
 http://localhost:8000/wallet
 ###
-POST http://localhost:8001/blocks
+POST http://localhost:8003/blocks
 
 {
     "message": "Mine Block!!"
@@ -21,7 +21,7 @@ POST http://localhost:8000/transactions
 
 {
     "to": "siyoung",
-    "amount":500
+    "amount":10
 }
 
 ###
@@ -36,11 +36,11 @@ http://localhost:8000/balance/c960460e7621ddf5fd6a322d4c4580bcbeb842bc9166c1654d
 
 
 ###
-POST http://127.0.0.1:8000/peers
+POST http://127.0.0.1:8002/peers
 
 {
     "address": "127.0.0.1",
-    "port":"8001"
+    "port":"8003"
 }
 
 ###
@@ -48,3 +48,6 @@ http://127.0.0.1:8000/peers
 
 ###
 http://127.0.0.1:8001/peers
+
+###
+http://127.0.0.1:8002/peers

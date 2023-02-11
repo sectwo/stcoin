@@ -51,7 +51,6 @@ func (b *Block) mine() {
 			break
 		} else {
 			b.Nonce++
-
 		}
 	}
 }
@@ -65,7 +64,7 @@ func createBlock(prevHash string, height, diff int) *Block {
 		Nonce:      0,
 	}
 	block.mine()
-	block.Transections = Mempool.TxToConfirm()
+	block.Transections = Mempool().TxToConfirm()
 	persistBlock(block)
 	return block
 }

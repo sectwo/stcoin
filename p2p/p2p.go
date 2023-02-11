@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/sectwo/stcoin/blockchain"
 	"github.com/sectwo/stcoin/utils"
 )
 
@@ -23,11 +24,37 @@ func Upgrade(w http.ResponseWriter, r *http.Request) {
 	initPeer(conn, ip, openPort)
 }
 
-func AddPeer(address, port, openPort string) {
+func AddPeer(address, port, openPort string, broadcast bool) {
 	// Port :8000 is requesting an upgrade from the port :8001
 	fmt.Printf("\n%s want to connect to port %s\n", openPort, port)
-	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort[1:]), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort), nil)
 	utils.HandleErr(err)
 	p := initPeer(conn, address, port)
+	if broadcast {
+		BroadcastNewPeer(p)
+		return
+	}
 	sendNewestBlock(p)
+}
+
+func BroadcastNewBlock(b *blockchain.Block) {
+	for _, p := range Peers.v {
+		notifyNewBlock(b, p)
+	}
+}
+
+func BroadcastNewTx(tx *blockchain.Tx) {
+	for _, p := range Peers.v {
+		notifyNewTx(tx, p)
+
+	}
+}
+
+func BroadcastNewPeer(newPeer *peer) {
+	for key, p := range Peers.v {
+		if key != newPeer.key {
+			payload := fmt.Sprintf("%s:%s", newPeer.key, p.port)
+			notifyNewPeer(payload, p)
+		}
+	}
 }

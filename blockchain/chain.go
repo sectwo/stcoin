@@ -1,6 +1,8 @@
 package blockchain
 
 import (
+	"encoding/json"
+	"net/http"
 	"sync"
 
 	"github.com/sectwo/stcoin/db"
@@ -18,6 +20,7 @@ type blockchain struct {
 	NewestHash        string `json:"newestHash"`
 	Height            int    `json:"height"`
 	CurrentDifficulty int    `json:"currentDifficulty"`
+	m                 sync.Mutex
 }
 
 var b *blockchain
@@ -28,12 +31,13 @@ func (b *blockchain) restore(data []byte) {
 	//utils.HandleErr(gob.NewDecoder(bytes.NewReader(data)).Decode(b))
 }
 
-func (b *blockchain) AddBlock() {
+func (b *blockchain) AddBlock() *Block {
 	block := createBlock(b.NewestHash, b.Height+1, getDifficulty(b))
 	b.NewestHash = block.Hash
 	b.Height = block.Height
 	b.CurrentDifficulty = block.Difficulty
 	persistBlockchain(b)
+	return block
 }
 
 func persistBlockchain(b *blockchain) {
@@ -41,6 +45,8 @@ func persistBlockchain(b *blockchain) {
 }
 
 func Blocks(b *blockchain) []*Block {
+	b.m.Lock()
+	defer b.m.Unlock()
 	var blocks []*Block
 	hashCursor := b.NewestHash
 	for {
@@ -156,7 +162,15 @@ func Blockchain() *blockchain {
 	return b
 }
 
+func Status(b *blockchain, w http.ResponseWriter) {
+	b.m.Lock()
+	defer b.m.Unlock()
+	utils.HandleErr(json.NewEncoder(w).Encode(b))
+}
+
 func (b *blockchain) Replace(newBlocks []*Block) {
+	b.m.Lock()
+	defer b.m.Unlock()
 	b.CurrentDifficulty = newBlocks[0].Difficulty
 	b.Height = len(newBlocks)
 	b.NewestHash = newBlocks[0].Hash
@@ -164,5 +178,26 @@ func (b *blockchain) Replace(newBlocks []*Block) {
 	db.EmptyBlocks()
 	for _, block := range newBlocks {
 		persistBlock(block)
+	}
+}
+
+func (b *blockchain) AddPeerBlock(newBlock *Block) {
+	b.m.Lock()
+	m.m.Lock()
+	defer b.m.Unlock()
+	defer m.m.Unlock()
+
+	b.Height += 1
+	b.CurrentDifficulty = newBlock.Difficulty
+	b.NewestHash = newBlock.Hash
+
+	persistBlockchain(b)
+	persistBlock(newBlock)
+
+	for _, tx := range newBlock.Transections {
+		_, ok := m.Txs[tx.Id]
+		if ok {
+			delete(m.Txs, tx.Id)
+		}
 	}
 }

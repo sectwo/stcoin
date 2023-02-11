@@ -3,6 +3,7 @@ package p2p
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/sectwo/stcoin/blockchain"
 	"github.com/sectwo/stcoin/utils"
@@ -14,6 +15,9 @@ const (
 	MessageNewestBlock MessageKind = iota
 	MessageAllBlocksRequest
 	MessageAllBlocksResponse
+	MessageNewBlockNotify
+	MessageNewTxNotify
+	MessageNewPeerNotify
 )
 
 type Message struct {
@@ -47,6 +51,21 @@ func sendAllBlocks(p *peer) {
 	p.inbox <- m
 }
 
+func notifyNewBlock(b *blockchain.Block, p *peer) {
+	m := makeMessage(MessageNewBlockNotify, b)
+	p.inbox <- m
+}
+
+func notifyNewTx(tx *blockchain.Tx, p *peer) {
+	m := makeMessage(MessageNewTxNotify, tx)
+	p.inbox <- m
+}
+
+func notifyNewPeer(address string, p *peer) {
+	m := makeMessage(MessageNewPeerNotify, address)
+	p.inbox <- m
+}
+
 func handleMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock:
@@ -73,5 +92,18 @@ func handleMsg(m *Message, p *peer) {
 		err := json.Unmarshal(m.Payload, &payload)
 		utils.HandleErr(err)
 		blockchain.Blockchain().Replace(payload)
+	case MessageNewBlockNotify:
+		var payload *blockchain.Block
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		blockchain.Blockchain().AddPeerBlock(payload)
+	case MessageNewTxNotify:
+		var payload *blockchain.Tx
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		blockchain.Mempool().AddPeerTx(payload)
+	case MessageNewPeerNotify:
+		var payload string
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		parts := strings.Split(payload, ":")
+		AddPeer(parts[0], parts[1], parts[2], false)
 	}
 }
